@@ -1,9 +1,12 @@
 import path from 'path';
+import { fileURLToPath } from 'url';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import { defineConfig } from 'vite';
 
 import runtimeErrorOverlay from '@replit/vite-plugin-runtime-error-modal';
+
+const __dirname = fileURLToPath(new URL('.', import.meta.url));
 
 // PORT and BASE_PATH are Replit-specific; use sensible defaults for Vercel/CI builds.
 const rawPort = process.env.PORT;
