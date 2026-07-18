@@ -691,13 +691,13 @@ function MemberInstallments({ memberId, onApproved }: { memberId: number; onAppr
               <div className="flex gap-2 border-t border-border/50 pt-3">
                 {inst.status === "pago" ? (
                   <Button
-                    variant="outline"
+                    variant="destructive"
                     size="sm"
-                    className="w-full text-xs h-8 text-muted-foreground"
+                    className="w-full text-xs h-8 bg-red-600 hover:bg-red-700 text-white gap-1"
                     onClick={() => handleRevert(inst.id)}
                     disabled={revertMutation.isPending}
                   >
-                    Reverter para Pendente
+                    <Trash2 className="h-3 w-3" /> Apagar Pagamento
                   </Button>
                 ) : (
                   <>
