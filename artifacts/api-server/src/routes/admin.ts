@@ -206,7 +206,8 @@ router.post("/admin/installments/:installmentId/approve", requireAdmin, async (r
     .limit(1);
 
   if (!installment) { res.status(404).json({ error: "Parcela não encontrada" }); return; }
-  const dataPago = dataPagoStr ? new Date(dataPagoStr) : new Date();
+  // Parse as local noon to avoid UTC-offset shifting the date to the previous day
+  const dataPago = dataPagoStr ? new Date(dataPagoStr + "T12:00:00") : new Date();
   const vencimento = new Date(installment.vencimento);
   const daysLate = differenceInDays(dataPago, vencimento);
 
