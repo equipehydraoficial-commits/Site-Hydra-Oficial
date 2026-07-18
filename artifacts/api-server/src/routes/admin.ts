@@ -8,18 +8,19 @@ import { addMonths, format, differenceInDays } from "date-fns";
 
 const router = Router();
 
+// Installments are always fixed: March (3) through November (11) = 9 parcelas of R$8.00
+const INSTALLMENT_MONTHS = [3, 4, 5, 6, 7, 8, 9, 10, 11];
+const INSTALLMENT_VALOR = "8.00";
+
 async function createInstallmentsForUser(userId: number): Promise<void> {
-  const now = new Date();
-  const installments = Array.from({ length: 8 }, (_, i) => {
-    const vencimento = addMonths(new Date(now.getFullYear(), now.getMonth(), 1), i + 1);
-    return {
-      userId,
-      numero: i + 1,
-      valor: "7.50",
-      vencimento: format(vencimento, "yyyy-MM-dd"),
-      status: "pendente" as const,
-    };
-  });
+  const year = new Date().getFullYear();
+  const installments = INSTALLMENT_MONTHS.map((month, i) => ({
+    userId,
+    numero: i + 1,
+    valor: INSTALLMENT_VALOR,
+    vencimento: format(new Date(year, month - 1, 1), "yyyy-MM-dd"),
+    status: "pendente" as const,
+  }));
   await db.insert(installmentsTable).values(installments);
 }
 
