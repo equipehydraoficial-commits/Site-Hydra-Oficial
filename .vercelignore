@@ -1,0 +1,6 @@
+attached_assets/
+.local/
+artifacts/hydra/src/
+artifacts/mockup-sandbox/
+node_modules/
+*.log
