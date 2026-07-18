@@ -3,20 +3,34 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: HYDRA Financial Tracker API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: auth
+    description: Authentication
+  - name: dashboard
+    description: Member dashboard
+  - name: installments
+    description: Installment management
+  - name: ranking
+    description: Ranking
+  - name: profile
+    description: User profile
+  - name: admin
+    description: Admin operations
+  - name: pix
+    description: Pix configuration
+
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,6 +38,457 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /auth/login:
+    post:
+      operationId: login
+      tags: [auth]
+      summary: Login with CPF and password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginInput"
+      responses:
+        "200":
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "401":
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/register:
+    post:
+      operationId: register
+      tags: [auth]
+      summary: Register a new member account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterInput"
+      responses:
+        "201":
+          description: Registration successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/me:
+    get:
+      operationId: getMe
+      tags: [auth]
+      summary: Get current authenticated user
+      responses:
+        "200":
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/logout:
+    post:
+      operationId: logout
+      tags: [auth]
+      summary: Logout
+      responses:
+        "200":
+          description: Logged out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /dashboard:
+    get:
+      operationId: getDashboard
+      tags: [dashboard]
+      summary: Get member dashboard summary
+      responses:
+        "200":
+          description: Dashboard data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Dashboard"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /installments/mine:
+    get:
+      operationId: getMyInstallments
+      tags: [installments]
+      summary: Get current user's installments
+      responses:
+        "200":
+          description: List of installments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Installment"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /installments/{installmentId}/submit:
+    post:
+      operationId: submitComprovante
+      tags: [installments]
+      summary: Submit payment proof (comprovante) for an installment
+      parameters:
+        - name: installmentId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ComprovanteInput"
+      responses:
+        "200":
+          description: Comprovante submitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Installment"
+        "404":
+          description: Installment not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /ranking:
+    get:
+      operationId: getRanking
+      tags: [ranking]
+      summary: Get member ranking by points
+      responses:
+        "200":
+          description: Ranking list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RankingResponse"
+
+  /profile/name:
+    patch:
+      operationId: updateProfileName
+      tags: [profile]
+      summary: Update display name
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NameUpdate"
+      responses:
+        "200":
+          description: Name updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /profile/password:
+    patch:
+      operationId: updateProfilePassword
+      tags: [profile]
+      summary: Update password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PasswordUpdate"
+      responses:
+        "200":
+          description: Password updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "400":
+          description: Wrong current password
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /pix-config:
+    get:
+      operationId: getPixConfig
+      tags: [pix]
+      summary: Get Pix payment key
+      responses:
+        "200":
+          description: Pix config
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PixConfig"
+
+    put:
+      operationId: updatePixConfig
+      tags: [pix]
+      summary: Admin - update Pix key
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PixConfigInput"
+      responses:
+        "200":
+          description: Pix config updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PixConfig"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /admin/stats:
+    get:
+      operationId: getAdminStats
+      tags: [admin]
+      summary: Admin dashboard statistics
+      responses:
+        "200":
+          description: Admin stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminStats"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /admin/members:
+    get:
+      operationId: getAdminMembers
+      tags: [admin]
+      summary: Admin - list all members
+      responses:
+        "200":
+          description: List of members
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MemberSummary"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+    post:
+      operationId: createMember
+      tags: [admin]
+      summary: Admin - create a new member
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MemberInput"
+      responses:
+        "201":
+          description: Member created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MemberSummary"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /admin/members/{memberId}:
+    delete:
+      operationId: deleteMember
+      tags: [admin]
+      summary: Admin - delete a member
+      parameters:
+        - name: memberId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Member deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "404":
+          description: Member not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /admin/members/{memberId}/installments:
+    get:
+      operationId: getMemberInstallments
+      tags: [admin]
+      summary: Admin - get installments for a specific member
+      parameters:
+        - name: memberId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Member installments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Installment"
+        "404":
+          description: Member not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /admin/installments/{installmentId}/approve:
+    post:
+      operationId: approveInstallment
+      tags: [admin]
+      summary: Admin - approve installment (mark as pago)
+      parameters:
+        - name: installmentId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ApproveInstallmentInput"
+      responses:
+        "200":
+          description: Installment approved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Installment"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /admin/installments/{installmentId}/revert:
+    post:
+      operationId: revertInstallment
+      tags: [admin]
+      summary: Admin - revert installment to pendente
+      parameters:
+        - name: installmentId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Installment reverted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Installment"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /admin/installments/{installmentId}/atrasado:
+    post:
+      operationId: markInstallmentAtrasado
+      tags: [admin]
+      summary: Admin - mark installment as atrasado (late)
+      parameters:
+        - name: installmentId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Installment marked as atrasado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Installment"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +499,228 @@ components:
       required:
         - status
 
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+
+    SuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+      required:
+        - success
+
+    LoginInput:
+      type: object
+      required: [cpf, senha]
+      properties:
+        cpf:
+          type: string
+        senha:
+          type: string
+
+    RegisterInput:
+      type: object
+      required: [nome, cpf, turma, senha]
+      properties:
+        nome:
+          type: string
+        cpf:
+          type: string
+        turma:
+          type: string
+        senha:
+          type: string
+
+    User:
+      type: object
+      required: [id, nome, cpf, turma, isAdmin, pontos]
+      properties:
+        id:
+          type: integer
+        nome:
+          type: string
+        cpf:
+          type: string
+        turma:
+          type: string
+        isAdmin:
+          type: boolean
+        pontos:
+          type: integer
+
+    AuthResponse:
+      type: object
+      required: [user]
+      properties:
+        user:
+          $ref: "#/components/schemas/User"
+
+    Installment:
+      type: object
+      required: [id, userId, numero, valor, vencimento, status]
+      properties:
+        id:
+          type: integer
+        userId:
+          type: integer
+        numero:
+          type: integer
+        valor:
+          type: number
+        vencimento:
+          type: string
+        status:
+          type: string
+          enum: [pendente, pago, atrasado]
+        dataPago:
+          type: ["string", "null"]
+        comprovante:
+          type: ["string", "null"]
+
+    ComprovanteInput:
+      type: object
+      required: [comprovante]
+      properties:
+        comprovante:
+          type: string
+          description: Base64 encoded image or file URL
+
+    Dashboard:
+      type: object
+      required: [user, totalContribuido, totalPlano, parcelasPageas, totalParcelas, nextInstallment]
+      properties:
+        user:
+          $ref: "#/components/schemas/User"
+        totalContribuido:
+          type: number
+        totalPlano:
+          type: number
+        parcelasPageas:
+          type: integer
+        totalParcelas:
+          type: integer
+        nextInstallment:
+          oneOf:
+            - $ref: "#/components/schemas/Installment"
+            - type: "null"
+
+    RankingEntry:
+      type: object
+      required: [rank, userId, nome, turma, pontos]
+      properties:
+        rank:
+          type: integer
+        userId:
+          type: integer
+        nome:
+          type: string
+        turma:
+          type: string
+        pontos:
+          type: integer
+
+    RankingResponse:
+      type: object
+      required: [entries, currentUserRank]
+      properties:
+        entries:
+          type: array
+          items:
+            $ref: "#/components/schemas/RankingEntry"
+        currentUserRank:
+          oneOf:
+            - $ref: "#/components/schemas/RankingEntry"
+            - type: "null"
+
+    NameUpdate:
+      type: object
+      required: [nome]
+      properties:
+        nome:
+          type: string
+
+    PasswordUpdate:
+      type: object
+      required: [senhaAtual, novaSenha]
+      properties:
+        senhaAtual:
+          type: string
+        novaSenha:
+          type: string
+
+    PixConfig:
+      type: object
+      required: [chavePix]
+      properties:
+        chavePix:
+          type: string
+
+    PixConfigInput:
+      type: object
+      required: [chavePix]
+      properties:
+        chavePix:
+          type: string
+
+    AdminStats:
+      type: object
+      required: [caixaTotal, caixaMesAtual, totalMembros, inadimplentes]
+      properties:
+        caixaTotal:
+          type: number
+        caixaMesAtual:
+          type: number
+        totalMembros:
+          type: integer
+        inadimplentes:
+          type: integer
+
+    MemberSummary:
+      type: object
+      required: [id, nome, cpf, turma, pontos, parcelasPageas, totalParcelas, totalPago]
+      properties:
+        id:
+          type: integer
+        nome:
+          type: string
+        cpf:
+          type: string
+        turma:
+          type: string
+        pontos:
+          type: integer
+        parcelasPageas:
+          type: integer
+        totalParcelas:
+          type: integer
+        totalPago:
+          type: number
+
+    MemberInput:
+      type: object
+      required: [nome, cpf, turma, senha]
+      properties:
+        nome:
+          type: string
+        cpf:
+          type: string
+        turma:
+          type: string
+        senha:
+          type: string
+
+    ApproveInstallmentInput:
+      type: object
+      required: [isLate]
+      properties:
+        isLate:
+          type: boolean
+          description: Whether the payment was made late (affects points)

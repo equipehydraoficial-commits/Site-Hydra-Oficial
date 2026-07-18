@@ -1,36 +1,51 @@
-# [Project name]
+# HYDRA Financial Tracker
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+Sistema de controle de contribuições financeiras para equipes/turmas. Membros pagam parcelas mensais e acumulam pontos por pontualidade.
 
 ## Run & Operate
 
-- `pnpm --filter @workspace/api-server run dev` — run the API server (port 5000)
-- `pnpm run typecheck` — full typecheck across all packages
-- `pnpm run build` — typecheck + build all packages
-- `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
-- `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
-- Required env: `DATABASE_URL` — Postgres connection string
+- `pnpm --filter @workspace/api-server run dev` — rodar o servidor API (porta 8080)
+- `pnpm --filter @workspace/hydra run dev` — rodar o frontend (porta 24711)
+- `pnpm run typecheck` — typecheck completo em todos os pacotes
+- `pnpm run build` — typecheck + build de todos os pacotes
+- `pnpm --filter @workspace/api-spec run codegen` — regenerar hooks React Query e schemas Zod do OpenAPI
+- `pnpm --filter @workspace/db run push` — aplicar mudanças de schema no DB (somente dev)
+- Required env: `DATABASE_URL` — Postgres connection string, `SESSION_SECRET` — segredo para sessões
 
 ## Stack
 
 - pnpm workspaces, Node.js 24, TypeScript 5.9
+- Frontend: React + Vite + Tailwind CSS + Wouter (roteamento)
 - API: Express 5
 - DB: PostgreSQL + Drizzle ORM
-- Validation: Zod (`zod/v4`), `drizzle-zod`
+- Auth: express-session + bcryptjs
+- Validation: Zod (zod/v4), drizzle-zod
 - API codegen: Orval (from OpenAPI spec)
 - Build: esbuild (CJS bundle)
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `lib/api-spec/openapi.yaml` — contrato da API (fonte da verdade)
+- `lib/db/src/schema/` — schema do banco (users, installments, pix_config)
+- `artifacts/api-server/src/routes/` — rotas Express
+- `artifacts/hydra/src/` — frontend React
 
-## Architecture decisions
+## Credenciais padrão (admin)
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- CPF: `000.000.000-00`
+- Senha: `admin123`
 
-## Product
+## Sistema de pontos
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+- Pago no prazo (≤0 dias): +70 pts (+50 + 20 bônus)
+- Pago com até 1 semana de atraso: +50 pts
+- Marcado como atrasado (> 1 semana): -30 pts
+- Pago após desconto de atraso: +50 pts
+
+## Plano padrão
+
+- 8 parcelas de R$7,50 = R$60,00 total
+- Criadas automaticamente no cadastro
 
 ## User preferences
 
@@ -38,7 +53,9 @@ _Populate as you build — explicit user instructions worth remembering across s
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
+- O build do API server precisa rodar antes de iniciar (`pnpm run build && node dist/index.mjs`)
+- Imagens de comprovante são enviadas como base64
+- Session cookies requerem `credentials: true` no fetch do frontend
 
 ## Pointers
 

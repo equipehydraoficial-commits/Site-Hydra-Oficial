@@ -1,0 +1,27 @@
+kind = "web"
+previewPath = "/"
+title = "HYDRA Financial Tracker"
+version = "1.0.0"
+id = "artifacts/hydra"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 24711
+
+[services.development]
+run = "pnpm --filter @workspace/hydra run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/hydra", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/hydra/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "24711"
+BASE_PATH = "/"
